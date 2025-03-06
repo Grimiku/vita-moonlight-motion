@@ -27,3 +27,4 @@ bool update_device(device_info_t *info);
 void load_all_known_devices();
 bool load_device_info(device_info_t *info);
 void save_device_info(const device_info_t *info);
+void remove_device(const device_info_t *info);

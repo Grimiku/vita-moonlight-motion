@@ -6,6 +6,7 @@
 #include <ini.h>
 
 #include <psp2/io/dirent.h>
+#include <psp2/io/fcntl.h>
 
 #include "device.h"
 #include "debug.h"
@@ -33,6 +34,10 @@ device_info_t* find_device(const char *name) {
 
 static void device_file_path(char *out, const char *dir) {
   snprintf(out, 512, DATA_DIR "/%s/" DEVICE_FILE, dir);
+}
+
+static void device_path(char *out, const char *dir) {
+  snprintf(out, 512, DATA_DIR "/%s/", dir);
 }
 
 static int device_ini_handle(void *out, const char *section, const char *name,
@@ -194,4 +199,23 @@ void save_device_info(const device_info_t *info) {
 
   fclose(fd);
   vita_debug_log("save_device_info: file closed\n");
+}
+
+void remove_device(const device_info_t *info) {
+  char path[512] = {0};
+  device_path(path, info->name);
+  
+  vita_debug_log("remove device: removing device: %s\n", info->name);
+  
+  SceUID dfd = sceIoDopen(path);
+  SceIoDirent dir;
+  memset(&dir, 0, sizeof(SceIoDirent));
+  while (sceIoDread(dfd, &dir) > 0) {
+    char current_file[512];
+    snprintf(current_file, sizeof(current_file), "%s/%s", path, dir.d_name);
+    sceIoRemove(current_file);
+  }
+  sceIoDclose(dfd);
+
+  sceIoRmdir(path);
 }

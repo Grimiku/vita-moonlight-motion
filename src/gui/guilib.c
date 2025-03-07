@@ -386,6 +386,9 @@ int display_menu(menu_entry menu[], int total_elements, menu_geom *geom_ptr,
     if (input.buttons & SCE_CTRL_UP) {
       cursor -= 1;
     }
+    if (input.buttons & SCE_CTRL_SQUARE) {
+      removal_confirm("Do you want to remove this device?", NULL, 2, NULL, NULL);
+    }
     cursor = cursor < 0 ? 0 : cursor;
     cursor = cursor > active_elements - 1 ? active_elements - 1 : cursor;
 
@@ -421,6 +424,34 @@ error:
   return exit_code;
 }
 
+int removal_confirm(char *message, char *button_captions[], int buttons_count,
+                    gui_loop_callback cb, void *context) {
+
+  menu_geom alert_geom = make_geom_centered(400, 200);
+
+  while (true) {
+    ui_start();
+
+    draw_alert(message, alert_geom, button_captions, buttons_count);
+
+    input_data input = {0};
+    input.buttons = read_buttons();
+    sceTouchPeek(SCE_TOUCH_PORT_FRONT, &input.touch, 1);
+
+    if (input.buttons & SCE_CTRL_HOLD) {
+      ui_end();
+      continue;
+    }
+
+    if (input.buttons & config.btn_confirm) {
+      return 0;
+    } else if (input.buttons & config.btn_cancel) {
+      return 1;
+    }
+
+    ui_end();
+  }
+}
 
 void display_alert(char *message, char *button_captions[], int buttons_count,
                    gui_loop_callback cb, void *context) {

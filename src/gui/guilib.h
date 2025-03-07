@@ -54,6 +54,14 @@ int display_menu(
         void *context
         );
 
+int removal_confirm(
+        char *message,
+        char *button_captions[],
+        int buttons_count,
+        gui_loop_callback cb,
+        void *context
+        );
+
 void display_alert(
         char *message,
         char *button_captions[],
